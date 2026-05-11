@@ -231,11 +231,16 @@ def load_model_and_data():
     df = pd.read_csv("telecom_churn_cleaned.csv")
 
     x = df[['Tenure', 'MonthlyCharges_Clean', 'TotalCharges_Clean']].copy()
-    y = df['Churn']
+    y = df['Churn'].copy()
 
-    x.loc[:, 'TotalCharges_Clean'] = pd.to_numeric(x['TotalCharges_Clean'], errors='coerce')
+    x['TotalCharges_Clean'] = pd.to_numeric(x['TotalCharges_Clean'], errors='coerce').astype(float)
     median_val = x['TotalCharges_Clean'].median()
-    x.loc[:, 'TotalCharges_Clean'] = pd.to_numeric(x['TotalCharges_Clean'].fillna(median_val), errors='coerce')
+    x['TotalCharges_Clean'] = x['TotalCharges_Clean'].fillna(median_val)
+
+    # Remove any rows with NaN in x
+    mask = ~(x['Tenure'].isna() | x['MonthlyCharges_Clean'].isna() | x['TotalCharges_Clean'].isna())
+    x = x[mask]
+    y = y[mask]
 
     x_train, x_test, y_train, y_test = train_test_split(x, y, test_size=0.2, random_state=42)
 
